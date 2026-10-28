@@ -306,7 +306,9 @@ export function buildGraph(o: BuildOptions): BuiltGraph {
       );
     } else if (p.audio.normalize && o.loudnorm === undefined) {
       // One-pass (preview): good enough to judge.
-      parts.push(`[${a}]loudnorm=I=${p.audio.target}:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[aout]`);
+      parts.push(
+        `[${a}]loudnorm=I=${p.audio.target}:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[aout]`,
+      );
     } else {
       parts.push(`[${a}]anull[aout]`);
     }
