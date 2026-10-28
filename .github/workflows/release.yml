@@ -1,0 +1,37 @@
+name: Release to npm
+
+# Runs only when started by hand from the Actions tab. Publishing needs the
+# @vibeediting npm org and "trusted publishing" set up for this repository.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only show what would be published'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - name: Publish (dry run)
+        if: ${{ inputs.dry_run }}
+        run: npm publish --access public --dry-run
+      - name: Publish
+        if: ${{ !inputs.dry_run }}
+        run: npm publish --access public
