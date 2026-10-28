@@ -302,11 +302,11 @@ export function buildGraph(o: BuildOptions): BuiltGraph {
     } else if (o.loudnorm && typeof o.loudnorm === 'object' && p.audio.normalize) {
       const m = o.loudnorm;
       parts.push(
-        `[${a}]loudnorm=I=${p.audio.target}:TP=-1.5:LRA=11:measured_I=${m.i}:measured_TP=${m.tp}:measured_LRA=${m.lra}:measured_thresh=${m.thresh}:offset=${m.offset}:linear=true,aresample=48000[aout]`,
+        `[${a}]loudnorm=I=${p.audio.target}:TP=-1.5:LRA=11:measured_I=${m.i}:measured_TP=${m.tp}:measured_LRA=${m.lra}:measured_thresh=${m.thresh}:offset=${m.offset}:linear=true,aresample=48000,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[aout]`,
       );
     } else if (p.audio.normalize && o.loudnorm === undefined) {
       // One-pass (preview): good enough to judge.
-      parts.push(`[${a}]loudnorm=I=${p.audio.target}:TP=-1.5:LRA=11,aresample=48000[aout]`);
+      parts.push(`[${a}]loudnorm=I=${p.audio.target}:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[aout]`);
     } else {
       parts.push(`[${a}]anull[aout]`);
     }

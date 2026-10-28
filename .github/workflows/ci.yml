@@ -99,11 +99,8 @@ jobs:
       - name: Start the test license server (macOS, Linux)
         if: runner.os != 'Windows'
         run: nohup node node_modules/tsx/dist/cli.mjs scripts/test-license-server.mts > license-server.log 2>&1 &
-      - name: Start the test license server (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: Start-Process -FilePath node -ArgumentList 'node_modules/tsx/dist/cli.mjs','scripts/test-license-server.mts' -RedirectStandardOutput license-server.log -RedirectStandardError license-server.err -WindowStyle Hidden
       - name: Wait for the license server
+        if: runner.os != 'Windows'
         shell: bash
         run: for i in $(seq 1 120); do node -e "fetch('http://127.0.0.1:8787/').then(()=>process.exit(0),()=>process.exit(1))" && exit 0; sleep 1; done; exit 1
       - name: Pretend Cursor is installed
@@ -117,6 +114,14 @@ jobs:
         if: runner.os == 'Windows'
         shell: powershell
         run: |
+          # Windows ends a step's background processes with the step, so the test
+          # license server runs inside this step.
+          $server = Start-Process -FilePath node -ArgumentList 'node_modules/tsx/dist/cli.mjs','scripts/test-license-server.mts' -RedirectStandardOutput license-server.log -RedirectStandardError license-server.err -WindowStyle Hidden -PassThru
+          $up = $false
+          for ($i = 0; $i -lt 120 -and -not $up; $i++) {
+            try { Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8787/ | Out-Null; $up = $true } catch { if ($_.Exception.Response) { $up = $true } else { Start-Sleep 1 } }
+          }
+          if (-not $up) { Write-Host 'license server did not start'; exit 1 }
           $env:VIBE_SETUP_ARGS = '--license VIBE-2345-6789-ABCD-EFGH --no-model --yes'
           Get-Content install/install.ps1 -Raw | Invoke-Expression
           if ($LASTEXITCODE -ne 0) { exit 1 }
