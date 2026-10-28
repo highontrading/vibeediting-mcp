@@ -14,6 +14,7 @@ async function connect(cwd: string, env: Record<string, string>): Promise<Client
     args: [CLI],
     cwd,
     env: {
+      VIBE_AUTO_DOWNLOAD: '0',
       PATH: process.env.PATH ?? '',
       HOME: process.env.HOME ?? '',
       USERPROFILE: process.env.USERPROFILE ?? '',
@@ -185,6 +186,27 @@ describe.skipIf(!fs.existsSync(CLI) || !hasFfmpeg())('MCP server end to end (std
     }
   });
 
+  it('activates a key given in chat and then edits', async () => {
+    const c5 = await connect(root, { VIBE_HOME: path.join(root, '.chatkey'), VIBE_API_URL: lic.url });
+    try {
+      const bad: any = await c5.callTool({ name: 'activate_license', arguments: { key: 'hello' } });
+      expect(bad.isError).toBe(true);
+      const r: any = await c5.callTool({
+        name: 'activate_license',
+        arguments: { key: ` ${VALID_KEY.toLowerCase()} ` },
+      });
+      expect(r.isError).toBeFalsy();
+      expect(textOf(r)).toContain('Activated');
+      // Editing tools are unlocked now (the project itself may already exist from earlier tests).
+      const p: any = await c5.callTool({ name: 'create_project', arguments: { videos: ['my talk.mp4'] } });
+      expect(textOf(p)).not.toMatch(/license|activate/i);
+      const l: any = await c5.callTool({ name: 'check_license', arguments: {} });
+      expect(textOf(l)).toContain('saved on this computer');
+    } finally {
+      await c5.close();
+    }
+  });
+
   it('offers a smaller tool set with VIBE_TOOLSET=core', async () => {
     const c4 = await connect(root, {
       VIBE_HOME: home,
@@ -194,7 +216,7 @@ describe.skipIf(!fs.existsSync(CLI) || !hasFfmpeg())('MCP server end to end (std
     });
     try {
       const { tools } = await c4.listTools();
-      expect(tools.length).toBeLessThanOrEqual(30);
+      expect(tools.length).toBeLessThanOrEqual(32);
       expect(tools.map((t) => t.name)).toContain('export_video');
     } finally {
       await c4.close();

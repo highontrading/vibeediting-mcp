@@ -1,6 +1,7 @@
 import os from 'node:os';
 import * as z from 'zod/v4';
-import { findFfmpeg, INSTALL_HELP } from '../media/ffmpeg.js';
+import { findFfmpeg, INSTALL_HELP, prefetchFfmpeg, usable } from '../media/ffmpeg.js';
+import { autoDownloadAllowed, downloadState, managedPaths, platformKey } from '../media/ffmpegDownload.js';
 import { findBrowser } from '../motion/browser.js';
 import { stockKeys } from '../stock/stock.js';
 import { cloudKey } from '../transcribe/cloud.js';
@@ -16,7 +17,9 @@ import {
 } from '../transcribe/models.js';
 import { dirs, MAX_WAIT_SECONDS, VERSION, vibeHome } from '../util/config.js';
 import { ensureDir } from '../util/fsx.js';
-import { type App, runJob, text, tool, waitJob } from './kit.js';
+import { isValidKeyFormat, normalizeKey } from '../license/key.js';
+import { writeUserConfig } from '../util/userConfig.js';
+import { type App, fail, runJob, text, tool, waitJob } from './kit.js';
 
 export function registerSetupTools(app: App): void {
   tool(
@@ -48,12 +51,27 @@ export function registerSetupTools(app: App): void {
       ];
       const ok = (b: boolean) => (b ? 'OK  ' : 'FIX ');
       const ff = await findFfmpeg(true);
-      if (!ff) {
+      const dl = downloadState();
+      const managed = ff && ff.ffmpeg === managedPaths().ffmpeg;
+      if (ff && usable(ff)) {
+        lines.push(
+          `OK  FFmpeg ${ff.version}${managed ? ' (downloaded by vibeediting)' : ''} at ${ff.ffmpeg}`,
+        );
+      } else if (dl.running) {
+        lines.push(
+          `... FFmpeg: downloading the video tools now (${Math.round(dl.fraction * 100)}%, one time only). Editing works as soon as this finishes.`,
+        );
+      } else if (autoDownloadAllowed() && platformKey()) {
+        void prefetchFfmpeg();
+        lines.push(
+          `... FFmpeg: ${ff ? 'the installed FFmpeg has no caption support, so ' : ''}I started downloading the video tools (about 50 MB, one time only).${dl.error ? ` Last try failed: ${dl.error}` : ''}`,
+        );
+      } else if (!ff) {
         lines.push(
           `${ok(false)}FFmpeg: not found. ${process.platform === 'darwin' ? INSTALL_HELP.mac : process.platform === 'win32' ? INSTALL_HELP.win : INSTALL_HELP.linux}`,
         );
       } else {
-        lines.push(`${ok(ff.hasLibass && ff.hasX264)}FFmpeg ${ff.version} at ${ff.ffmpeg}`);
+        lines.push(`${ok(false)}FFmpeg ${ff.version} at ${ff.ffmpeg}`);
         if (!ff.hasLibass)
           lines.push(
             `     It has no caption support (libass). ${process.platform === 'darwin' ? INSTALL_HELP.mac : INSTALL_HELP.win}`,
@@ -111,11 +129,49 @@ export function registerSetupTools(app: App): void {
     },
     async () => {
       const s = await app.license.check({ force: true });
-      const extra = s.checkedAt ? `\nLast successful check: ${s.checkedAt}` : '';
+      const source = await app.license.keySource();
+      const from =
+        source === 'saved'
+          ? ' (saved on this computer)'
+          : source === 'settings'
+            ? ' (from the app settings)'
+            : '';
+      const extra =
+        (s.checkedAt ? `\nLast successful check: ${s.checkedAt}` : '') +
+        (s.ok ? '' : '\nTo use a different key, ask the user for it and call activate_license.');
       return {
-        content: [{ type: 'text', text: `Key: ${s.keyMasked}\n${s.message}${extra}` }],
+        content: [{ type: 'text', text: `Key: ${s.keyMasked}${from}\n${s.message}${extra}` }],
         isError: !s.ok,
       };
+    },
+  );
+
+  tool(
+    app,
+    'activate_license',
+    {
+      title: 'Activate license',
+      description:
+        'Activate vibeediting with the license key the user gives you (VIBE-XXXX-XXXX-XXXX-XXXX, from their purchase email). Saves it on this computer, so it is only needed once. Use when a tool says no license key was found, or the user wants to change their key.',
+      input: z.object({ key: z.string().min(4).describe('the license key exactly as the user gave it') }),
+      annotations: { idempotentHint: true, openWorldHint: true },
+    },
+    async (args) => {
+      const key = normalizeKey(args.key);
+      if (!isValidKeyFormat(key)) {
+        return fail(
+          `"${args.key.slice(0, 40)}" does not look like a vibeediting key. It should look like VIBE-XXXX-XXXX-XXXX-XXXX (letters and numbers, no 0, 1, O or I). Ask the user to copy it again from their purchase email.`,
+        );
+      }
+      await writeUserConfig({ licenseKey: key });
+      const s = await app.license.check({ force: true });
+      if (s.ok)
+        return text(
+          `Activated. ${s.message} The key is saved on this computer, so you will not be asked again.`,
+        );
+      if (s.state === 'offline')
+        return text(`I saved the key, but could not reach the license server to confirm it. ${s.message}`);
+      return fail(`I saved the key, but the license server did not accept it. ${s.message}`);
     },
   );
 

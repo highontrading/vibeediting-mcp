@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import { apiUrl, dirs, VERSION } from '../util/config.js';
 import { readJson, sha256, writeJson } from '../util/fsx.js';
 import { log } from '../util/log.js';
+import { readUserConfig } from '../util/userConfig.js';
 import { isValidKeyFormat, maskKey, normalizeKey } from './key.js';
 import { getMachineId } from './machineId.js';
 import {
@@ -11,6 +12,12 @@ import {
   offlineNeverActivatedMessage,
   reasonMessage,
 } from './messages.js';
+
+/** A key saved on this computer (given in chat or during setup) wins over the app settings. */
+async function defaultKey(): Promise<string | undefined> {
+  const saved = (await readUserConfig()).licenseKey;
+  return saved || process.env.VIBE_LICENSE_KEY;
+}
 
 export const RECHECK_MS = 24 * 60 * 60 * 1000;
 export const GRACE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -50,7 +57,7 @@ interface VerifyResponse {
 }
 
 export interface LicenseClientOptions {
-  getKey?: () => string | undefined;
+  getKey?: () => string | undefined | Promise<string | undefined>;
   fetchImpl?: typeof fetch;
   now?: () => number;
   cacheFile?: () => string;
@@ -61,7 +68,7 @@ export interface LicenseClientOptions {
 type NetResult = { kind: 'response'; status: number; body: any } | { kind: 'network'; error: string };
 
 export class LicenseClient {
-  private readonly getKey: () => string | undefined;
+  private readonly getKey: () => string | undefined | Promise<string | undefined>;
   private readonly fetchImpl: typeof fetch;
   private readonly now: () => number;
   private readonly cacheFile: () => string;
@@ -71,7 +78,7 @@ export class LicenseClient {
   private inflight: Promise<LicenseStatus> | null = null;
 
   constructor(opts: LicenseClientOptions = {}) {
-    this.getKey = opts.getKey ?? (() => process.env.VIBE_LICENSE_KEY);
+    this.getKey = opts.getKey ?? defaultKey;
     this.fetchImpl = opts.fetchImpl ?? ((...a) => fetch(...a));
     this.now = opts.now ?? (() => Date.now());
     this.cacheFile = opts.cacheFile ?? dirs.licenseFile;
@@ -79,13 +86,20 @@ export class LicenseClient {
     this.timeoutMs = opts.timeoutMs ?? 10_000;
   }
 
-  key(): string {
-    return normalizeKey(this.getKey());
+  async key(): Promise<string> {
+    return normalizeKey(await this.getKey());
+  }
+
+  /** Where the key in use came from, for messages. */
+  async keySource(): Promise<'saved' | 'settings' | 'none'> {
+    const saved = (await readUserConfig()).licenseKey;
+    if (saved) return 'saved';
+    return process.env.VIBE_LICENSE_KEY?.trim() ? 'settings' : 'none';
   }
 
   /** Check the license. Uses the cache when it is less than 24 hours old. */
   async check(opts: { force?: boolean } = {}): Promise<LicenseStatus> {
-    const key = this.key();
+    const key = await this.key();
     // Short in-memory memo so a burst of tool calls does not re-read the cache file.
     if (
       !opts.force &&
@@ -212,7 +226,7 @@ export class LicenseClient {
 
   /** Free this computer's activation slot. */
   async deactivate(): Promise<{ ok: boolean; message: string }> {
-    const key = this.key();
+    const key = await this.key();
     if (!key) return { ok: false, message: missingKeyMessage() };
     if (!isValidKeyFormat(key)) return { ok: false, message: reasonMessage('invalid_format') };
     const machineId = await this.machineId();

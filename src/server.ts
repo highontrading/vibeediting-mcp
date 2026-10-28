@@ -19,6 +19,7 @@ import { Workspace } from './util/workspace.js';
 export const CORE_TOOLS = [
   'check_setup',
   'check_license',
+  'activate_license',
   'deactivate_this_computer',
   'set_working_folder',
   'get_job_status',

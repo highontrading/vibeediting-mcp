@@ -14,8 +14,7 @@ const help = `Help: ${ACTIVATE_URL}`;
 export function missingKeyMessage(): string {
   return [
     'vibeediting is not activated on this computer yet: no license key was found.',
-    'Add your key (it looks like VIBE-XXXX-XXXX-XXXX-XXXX) to the vibeediting MCP settings as VIBE_LICENSE_KEY, then restart your AI app.',
-    'For example in Claude Code: claude mcp remove vibeediting, then add it again with --env VIBE_LICENSE_KEY=YOUR-KEY.',
+    'Ask the user for their license key (it looks like VIBE-XXXX-XXXX-XXXX-XXXX and is in their purchase email), then call activate_license with it. Nothing else needs to be installed or restarted.',
     help,
   ].join('\n');
 }

@@ -4,6 +4,14 @@ import path from 'node:path';
 import { UserError } from '../util/errors.js';
 import { log } from '../util/log.js';
 import { run } from '../util/proc.js';
+import {
+  autoDownloadAllowed,
+  downloadFfmpeg,
+  downloadState,
+  managedPaths,
+  managedReady,
+  platformKey,
+} from './ffmpegDownload.js';
 
 export interface FfmpegInfo {
   ffmpeg: string;
@@ -113,18 +121,68 @@ async function locate(): Promise<FfmpegInfo | null> {
     if (!fs.existsSync(ff) || !fs.existsSync(fp)) continue;
     const info = await inspect(ff, fp);
     if (!info) continue;
-    if (info.hasLibass && info.hasX264) {
+    if (usable(info)) {
       log.debug(`using ffmpeg ${info.version} at ${ff}`);
       return info;
     }
     fallback ??= info;
   }
+  // Our own downloaded copy (has captions support).
+  if (await managedReady()) {
+    const m = managedPaths();
+    const info = await inspect(m.ffmpeg, m.ffprobe);
+    if (info) return info;
+  }
   return fallback;
 }
 
+export function usable(info: FfmpegInfo | null): boolean {
+  return !!info && info.hasLibass && info.hasX264;
+}
+
+/** Start downloading FFmpeg in the background if this computer has no usable one. */
+export async function prefetchFfmpeg(): Promise<void> {
+  try {
+    if (usable(await findFfmpeg()) || !autoDownloadAllowed()) return;
+    log.info('no FFmpeg with caption support found; downloading it in the background');
+    await downloadFfmpeg();
+    await findFfmpeg(true);
+    log.info('FFmpeg downloaded');
+  } catch (err) {
+    log.error('background FFmpeg download failed', err);
+  }
+}
+
+/**
+ * A usable FFmpeg: the one on this computer, or our own copy (downloaded on first
+ * use). Waits up to `waitMs` for a download in progress, then explains and asks to retry.
+ */
+export async function ensureFfmpeg(
+  opts: { waitMs?: number; onProgress?: (f: number, msg: string) => void } = {},
+): Promise<FfmpegInfo | null> {
+  const found = await findFfmpeg();
+  if (found && usable(found)) return found;
+  if (!autoDownloadAllowed() || !platformKey()) return found;
+  const waitMs = opts.waitMs ?? 25_000;
+  const dl = downloadFfmpeg(opts.onProgress).then(() => findFfmpeg(true));
+  const timeout = new Promise<'timeout'>((r) => setTimeout(() => r('timeout'), waitMs).unref());
+  const r = await Promise.race([dl, timeout]);
+  if (r === 'timeout') {
+    dl.catch(() => undefined);
+    const pct = Math.round(downloadState().fraction * 100);
+    throw new UserError(
+      `Getting ready: I am downloading the video tools vibeediting needs (FFmpeg, about 50 MB, one time only). ${pct}% done. Tell the user it takes a minute or two, then try again.`,
+    );
+  }
+  return r;
+}
+
 /** ffmpeg info, or a friendly error telling the user how to install it. */
-export async function requireFfmpeg(opts: { needLibass?: boolean } = {}): Promise<FfmpegInfo> {
-  const info = await findFfmpeg();
+export async function requireFfmpeg(
+  opts: { needLibass?: boolean; waitMs?: number } = {},
+): Promise<FfmpegInfo> {
+  let info = await findFfmpeg();
+  if (!usable(info)) info = await ensureFfmpeg({ waitMs: opts.waitMs });
   if (!info) {
     // Maybe it was installed after we started: look again once.
     const again = await findFfmpeg(true);
@@ -132,7 +190,7 @@ export async function requireFfmpeg(opts: { needLibass?: boolean } = {}): Promis
       throw new UserError(
         `FFmpeg is not installed (or I cannot find it). ${installHelp()}. Guide: https://vibeediting.app/docs/install-ffmpeg`,
       );
-    return requireFfmpeg(opts);
+    info = again;
   }
   if (opts.needLibass && !info.hasLibass) {
     throw new UserError(

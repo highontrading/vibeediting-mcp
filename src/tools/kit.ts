@@ -49,6 +49,7 @@ export const t = (v: number | string | undefined, d = 0): number => (v === undef
 const UNGATED = new Set([
   'check_setup',
   'check_license',
+  'activate_license',
   'deactivate_this_computer',
   'set_working_folder',
   'get_job_status',

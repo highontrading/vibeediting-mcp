@@ -18,6 +18,10 @@ import { formatFor } from '../timeline/store.js';
 import type { Aspect, Project } from '../timeline/types.js';
 import { UserError } from '../util/errors.js';
 import { fmtDuration, fmtTime } from '../util/time.js';
+import { autoDownloadAllowed } from '../media/ffmpegDownload.js';
+import { whisperAvailable } from '../transcribe/local.js';
+import { defaultModel, ensureModel, isModelReady, MODELS } from '../transcribe/models.js';
+import { log } from '../util/log.js';
 import { listVideos, needTranscript, sourceWords } from './helpers.js';
 import { type App, done, runJob, summary, t, text, tool, zProject, zTime } from './kit.js';
 
@@ -97,9 +101,10 @@ export function registerProjectTools(app: App): void {
         style: args.style,
         replace: args.replace,
       });
+      const modelNote = await prefetchSpeechModel();
       return done(
         p,
-        `Created project "${p.name}". ${p.log[0]}`,
+        `Created project "${p.name}". ${p.log[0]}${modelNote}`,
         'transcribe (for captions/fillers), then cut_silences, set_aspect_ratio, add_captions... Show the user the plan before rendering.',
       );
     },
@@ -478,4 +483,12 @@ export function registerProjectTools(app: App): void {
       );
     },
   );
+}
+
+/** Start downloading the speech model in the background, so it is ready when captions are needed. */
+async function prefetchSpeechModel(): Promise<string> {
+  const id = defaultModel();
+  if (!autoDownloadAllowed() || !whisperAvailable() || (await isModelReady(id))) return '';
+  void ensureModel(id).catch((err) => log.error('speech model prefetch failed', err));
+  return `\nDownloading the speech model in the background (${Math.round(MODELS[id].bytes / 1048576)} MB, one time only). Transcription waits for it if needed.`;
 }

@@ -1,4 +1,5 @@
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
+import { prefetchFfmpeg } from './media/ffmpeg.js';
 import { createServer, createShared } from './server.js';
 import { VERSION } from './util/config.js';
 import { log, protectStdout } from './util/log.js';
@@ -10,11 +11,18 @@ if (argv.includes('--version') || argv.includes('-v')) {
   process.stderr.write(`${VERSION}\n`);
   process.exit(0);
 }
+if (argv[0] === 'setup' || argv.includes('--setup')) {
+  const { runSetup } = await import('./setup/run.js');
+  process.exit(await runSetup(argv));
+}
 if (argv.includes('--help') || argv.includes('-h')) {
   process.stderr.write(
     [
       `vibeediting MCP server ${VERSION}`,
       'This program is started by your AI app (Claude Code, Codex, Cursor...), not by hand.',
+      '',
+      'One-time setup (asks for your key, connects your AI apps, downloads FFmpeg and the speech model):',
+      '  npx -y @vibeediting/mcp --setup [--license KEY] [--no-model] [--model turbo] [--no-apps] [--yes]',
       'Setup guide: https://vibeediting.app/docs',
       '',
       'Environment variables:',
@@ -35,3 +43,6 @@ process.on('unhandledRejection', (err) => log.error('unhandled', err));
 process.on('uncaughtException', (err) => log.error('uncaught', err));
 
 serveStdio(() => createServer(shared), { onerror: (err) => log.error('transport', err) });
+
+// Get FFmpeg ready in the background if this computer has none.
+void prefetchFfmpeg();
