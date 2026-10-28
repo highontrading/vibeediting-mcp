@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.vibeediting/
+exports/
+test/.tmp/
+.DS_Store

@@ -1,0 +1,84 @@
+{
+  "name": "@vibeediting/mcp",
+  "version": "0.1.0",
+  "description": "Edit your videos by talking to your AI agent. Cut silences, add captions, titles, B-roll and export Reels, Shorts and YouTube videos. Runs 100% on your computer.",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "vibeediting <https://vibeediting.app>",
+  "homepage": "https://vibeediting.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/highontrading/vibeediting-mcp.git"
+  },
+  "bugs": {
+    "url": "https://vibeediting.app"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "video-editing",
+    "captions",
+    "ffmpeg",
+    "whisper",
+    "reels",
+    "shorts",
+    "claude",
+    "codex",
+    "cursor"
+  ],
+  "mcpName": "io.github.highontrading/vibeediting",
+  "type": "module",
+  "bin": {
+    "vibeediting-mcp": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "test:e2e": "npm run build && vitest run test/e2e",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "demo": "npm run build && node scripts/demo.mjs",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "playwright-core": "^1.64.1",
+    "zod": "^4.6.7"
+  },
+  "optionalDependencies": {
+    "@fugood/node-whisper-darwin-arm64": "1.2.0-rc.1",
+    "@fugood/node-whisper-darwin-x64": "1.2.0-rc.1",
+    "@fugood/node-whisper-linux-arm64": "1.2.0-rc.1",
+    "@fugood/node-whisper-linux-x64": "1.2.0-rc.1",
+    "@fugood/node-whisper-win32-arm64": "1.2.0-rc.1",
+    "@fugood/node-whisper-win32-x64": "1.2.0-rc.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "tsdown": "^0.23.3",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  }
+}
