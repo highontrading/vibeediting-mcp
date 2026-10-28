@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { apiUrl, dirs, VERSION } from '../util/config.js';
+import { apiUrl, dirs, envSetting, VERSION } from '../util/config.js';
 import { readJson, sha256, writeJson } from '../util/fsx.js';
 import { log } from '../util/log.js';
 import { readUserConfig } from '../util/userConfig.js';
@@ -16,7 +16,7 @@ import {
 /** A key saved on this computer (given in chat or during setup) wins over the app settings. */
 async function defaultKey(): Promise<string | undefined> {
   const saved = (await readUserConfig()).licenseKey;
-  return saved || process.env.VIBE_LICENSE_KEY;
+  return saved || envSetting('VIBE_LICENSE_KEY');
 }
 
 export const RECHECK_MS = 24 * 60 * 60 * 1000;
@@ -94,7 +94,7 @@ export class LicenseClient {
   async keySource(): Promise<'saved' | 'settings' | 'none'> {
     const saved = (await readUserConfig()).licenseKey;
     if (saved) return 'saved';
-    return process.env.VIBE_LICENSE_KEY?.trim() ? 'settings' : 'none';
+    return envSetting('VIBE_LICENSE_KEY') ? 'settings' : 'none';
   }
 
   /** Check the license. Uses the cache when it is less than 24 hours old. */

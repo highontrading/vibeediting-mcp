@@ -1,11 +1,12 @@
 import fs from 'node:fs';
+import { envSetting } from '../util/config.js';
 import { UserError } from '../util/errors.js';
 import { fixWordTimes, type Word } from './words.js';
 
 export type CloudEngine = 'deepgram' | 'openai';
 
 export function cloudKey(engine: CloudEngine): string | undefined {
-  return engine === 'deepgram' ? process.env.DEEPGRAM_API_KEY?.trim() : process.env.OPENAI_API_KEY?.trim();
+  return envSetting(engine === 'deepgram' ? 'DEEPGRAM_API_KEY' : 'OPENAI_API_KEY');
 }
 
 export interface CloudResult {

@@ -93,6 +93,8 @@ async function setupLicense(opts: SetupOptions, rl: readline.Interface | null): 
     if (existing && isValidKeyFormat(existing)) {
       const s = await client.check({ force: true });
       if (s.ok) {
+        // A key from VIBE_LICENSE_KEY: save it so every app finds it, not just this terminal.
+        if (!(await readUserConfig()).licenseKey) await writeUserConfig({ licenseKey: existing });
         say(green(`  OK  ${maskKey(existing)} is active on this computer.`));
         return true;
       }

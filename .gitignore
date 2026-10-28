@@ -6,3 +6,4 @@ coverage/
 exports/
 test/.tmp/
 .DS_Store
+build/

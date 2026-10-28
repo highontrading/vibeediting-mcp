@@ -43,6 +43,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "build:mcpb": "npm run build && tsx scripts/build-mcpb.mts",
     "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -71,6 +72,7 @@
     "@fugood/node-whisper-win32-x64": "1.2.0-rc.1"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@eslint/js": "^10.0.1",
     "@modelcontextprotocol/client": "^2.4.0",
     "@types/node": "^22.20.5",

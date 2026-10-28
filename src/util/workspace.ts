@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { vibeHome } from './config.js';
+import { envSetting, vibeHome } from './config.js';
 import { UserError } from './errors.js';
 
 const caseInsensitive = process.platform === 'win32' || process.platform === 'darwin';
@@ -81,7 +81,7 @@ export class Workspace {
 
   static detect(): Workspace {
     const fromEnv: Array<[string | undefined, string]> = [
-      [process.env.VIBE_PROJECT_DIR, 'VIBE_PROJECT_DIR'],
+      [envSetting('VIBE_PROJECT_DIR'), 'VIBE_PROJECT_DIR'],
       [process.env.CLAUDE_PROJECT_DIR, 'CLAUDE_PROJECT_DIR'],
     ];
     for (const [dir, source] of fromEnv) {

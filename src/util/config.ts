@@ -10,6 +10,16 @@ export const DOCS_URL = 'https://vibeediting.app/docs';
 export const ACTIVATE_URL = 'https://vibeediting.app/docs/activate-license';
 export const SUPPORT_URL = 'https://vibeediting.app/support';
 
+/**
+ * An environment setting, trimmed. Empty values and unfilled app placeholders such as
+ * "${user_config.pexels_api_key}" (an optional field the user left blank) count as unset.
+ */
+export function envSetting(name: string): string | undefined {
+  const v = process.env[name]?.trim();
+  if (!v || /^\$\{[^}]*\}$/.test(v)) return undefined;
+  return v;
+}
+
 export function apiUrl(): string {
   const raw = process.env.VIBE_API_URL?.trim();
   return (raw && raw.length > 0 ? raw : 'https://vibeediting.app').replace(/\/+$/, '');

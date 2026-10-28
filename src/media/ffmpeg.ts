@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { envSetting } from '../util/config.js';
 import { UserError } from '../util/errors.js';
 import { log } from '../util/log.js';
 import { run } from '../util/proc.js';
@@ -115,7 +116,9 @@ async function locate(): Promise<FfmpegInfo | null> {
     if (info) return info;
   }
   let fallback: FfmpegInfo | null = null;
-  for (const dir of candidateDirs()) {
+  // VIBE_FFMPEG=managed: ignore FFmpeg installed elsewhere and use (or download) our own copy.
+  const managedOnly = envSetting('VIBE_FFMPEG')?.toLowerCase() === 'managed';
+  for (const dir of managedOnly ? [] : candidateDirs()) {
     const ff = path.join(dir, exe('ffmpeg'));
     const fp = path.join(dir, exe('ffprobe'));
     if (!fs.existsSync(ff) || !fs.existsSync(fp)) continue;

@@ -35,3 +35,20 @@ jobs:
       - name: Publish
         if: ${{ !inputs.dry_run }}
         run: npm publish --access public
+
+  # The Claude app extension. Download it from this run's artifacts and put it on the
+  # website (or a GitHub release) as vibeediting.mcpb.
+  extension:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build:mcpb
+      - run: npx tsx scripts/smoke-mcpb.mts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vibeediting.mcpb
+          path: build/vibeediting.mcpb

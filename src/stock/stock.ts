@@ -3,7 +3,7 @@ import { createWriteStream } from 'node:fs';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { dirs } from '../util/config.js';
+import { dirs, envSetting } from '../util/config.js';
 import { UserError } from '../util/errors.js';
 import { ensureDir, exists, readJson, sha256, writeJson } from '../util/fsx.js';
 
@@ -37,8 +37,8 @@ export const LICENSES: Record<Provider, { name: string; url: string }> = {
 
 export function stockKeys(): Record<Provider, string | undefined> {
   return {
-    pexels: process.env.PEXELS_API_KEY?.trim() || undefined,
-    pixabay: process.env.PIXABAY_API_KEY?.trim() || undefined,
+    pexels: envSetting('PEXELS_API_KEY'),
+    pixabay: envSetting('PIXABAY_API_KEY'),
   };
 }
 
