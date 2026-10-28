@@ -45,7 +45,7 @@ Say: *"My videos are in D:\Videos\Reels."*
 
 ### `get_job_status`
 
-Wait for a background job (render, transcription, analysis) and get its result. Waits up to wait_seconds (default 50) before answering. Set cancel=true to stop the job.
+Wait for a background job (render, transcription, analysis) and get its result. Waits up to wait_seconds (default 45, max 50) before answering; call again if it is still running. Set cancel=true to stop the job.
 
 Say: *"Is the export done yet?"*
 
@@ -192,7 +192,7 @@ Say: *"Cut the silences but keep it natural."*
 
 ### `remove_fillers`
 
-Cut filler words ("umm", "uh", "matlab", "basically"...) and stutters ("I I") using the transcript. Best effort: Whisper leaves out many fillers by itself. Default list: um, umm, ummm, uh, uhh, uhm, erm, er, ah, ahh, hmm, hmmm, mm, mmm, matlab, basically, haan, achha... "matlab/basically/achha" are only cut when said as a filler (next to a pause). Use dry_run to review first.
+Cut filler words ("umm", "uh", "matlab", "basically"...) and stutters ("I I") using the transcript. Best effort: Whisper leaves out many fillers by itself. Default list: um, umm, ummm, uh, uhh, uhm, erm, er, ah, ahh, hmm, hmmm, mm, mmm, matlab, basically, अं, अ... "matlab" and "basically" are only cut when said as a filler (next to a pause). Add words like "achha" or "like" with extra_words. Use dry_run to review first.
 
 Say: *"Remove the umms and "matlab"s."*
 

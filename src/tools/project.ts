@@ -237,7 +237,7 @@ export function registerProjectTools(app: App): void {
     'remove_fillers',
     {
       title: 'Remove fillers',
-      description: `Cut filler words ("umm", "uh", "matlab", "basically"...) and stutters ("I I") using the transcript. Best effort: Whisper leaves out many fillers by itself. Default list: ${DEFAULT_FILLERS.slice(0, 18).join(', ')}... "matlab/basically/achha" are only cut when said as a filler (next to a pause). Use dry_run to review first.`,
+      description: `Cut filler words ("umm", "uh", "matlab", "basically"...) and stutters ("I I") using the transcript. Best effort: Whisper leaves out many fillers by itself. Default list: ${DEFAULT_FILLERS.slice(0, 18).join(', ')}... "matlab" and "basically" are only cut when said as a filler (next to a pause). Add words like "achha" or "like" with extra_words. Use dry_run to review first.`,
       input: z.object({
         project: zProject,
         extra_words: z.array(z.string()).optional().describe('more words to treat as fillers'),

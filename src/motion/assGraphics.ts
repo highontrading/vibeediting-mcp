@@ -6,6 +6,7 @@ import {
   assColorTag,
   assEscape,
   DEVANAGARI,
+  FONT_SCALE,
 } from '../captions/ass.js';
 import { fontHasDevanagari, type StyleSpec } from '../styles/presets.js';
 import type {
@@ -385,7 +386,7 @@ function templateEvents(o: TemplateOverlay, ctx: Ctx): AssEvent[] {
     case 'checklist': {
       const items = (Array.isArray(p.items) ? p.items : []).slice(0, 8).map((i: unknown) => str(i));
       if (items.length === 0) break;
-      const fs = short * num(p.size, 0.05);
+      const fs = short * num(p.size, 0.06);
       const gap = fs * 1.7;
       const x = W * (ctx.safe.side + 0.05);
       let y = H * 0.5 - ((items.length - 1) * gap) / 2;
@@ -472,7 +473,7 @@ export function graphicEvents(overlays: Overlay[], W: number, H: number, style: 
   const ctx: Ctx = {
     W,
     H,
-    short: Math.min(W, H),
+    short: Math.min(W, H) * FONT_SCALE,
     style,
     vertical,
     safe: vertical ? style.safeMargins.vertical : style.safeMargins.horizontal,

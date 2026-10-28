@@ -1,7 +1,15 @@
 import type { StyleSpec } from '../styles/presets.js';
 import { fontHasDevanagari } from '../styles/presets.js';
 import type { Clip, Project } from '../timeline/types.js';
-import { type AssEvent, type AssStyle, assColor, assColorTag, assEscape, DEVANAGARI } from './ass.js';
+import {
+  type AssEvent,
+  type AssStyle,
+  assColor,
+  assColorTag,
+  assEscape,
+  DEVANAGARI,
+  FONT_SCALE,
+} from './ass.js';
 
 export interface OutWord {
   t: string;
@@ -122,7 +130,7 @@ export function captionEvents(
   const cs = captionSettings(style, overrides);
   const vertical = height > width;
   const short = Math.min(width, height);
-  const size = cs.size * short * (vertical ? 1 : 0.85);
+  const size = cs.size * short * FONT_SCALE * (vertical ? 1 : 0.85);
   const safe = vertical ? style.safeMargins.vertical : style.safeMargins.horizontal;
   let alignment = 2;
   let marginV = safe.bottom * height;

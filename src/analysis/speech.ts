@@ -20,9 +20,6 @@ export const DEFAULT_FILLERS = [
   // Hindi / Hinglish (Roman)
   'matlab',
   'basically',
-  'haan',
-  'achha',
-  'acha',
   // Hindi (Devanagari)
   'अं',
   'अ',
@@ -33,11 +30,10 @@ export const DEFAULT_FILLERS = [
   'हम्',
   'मतलब',
   'बेसिकली',
-  'अच्छा',
 ];
 
 /** These are only fillers at the start of a sentence or between pauses, not inside normal speech. */
-const SOFT = new Set(['matlab', 'basically', 'haan', 'achha', 'acha', 'मतलब', 'बेसिकली', 'अच्छा']);
+const SOFT = new Set(['matlab', 'basically', 'मतलब', 'बेसिकली']);
 
 export interface FillerHit {
   index: number;

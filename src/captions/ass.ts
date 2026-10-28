@@ -97,4 +97,11 @@ export function buildAss(width: number, height: number, styles: AssStyle[], even
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
+/**
+ * libass reads Fontsize as the full line height (ascent + descent), so letters come out
+ * about 30% smaller than the number suggests. Style sizes are "letter size" fractions,
+ * multiplied by this factor when written to the ASS file.
+ */
+export const FONT_SCALE = 1.35;
+
 export const DEVANAGARI = /\p{Script=Devanagari}/u;
