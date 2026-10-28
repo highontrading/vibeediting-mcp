@@ -127,7 +127,7 @@ export const PRESETS: StyleSpec[] = [
       box: '#000000B3',
     },
     caption: {
-      size: 0.078,
+      size: 0.09,
       position: 'lower',
       maxWordsPerLine: 3,
       lines: 1,

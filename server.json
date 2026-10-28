@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.highontrading/vibeediting",
+  "title": "vibeediting",
+  "description": "Edit videos by talking to your AI agent: captions, cuts, titles, B-roll, Reels/Shorts export. Runs locally.",
+  "websiteUrl": "https://vibeediting.app",
+  "repository": { "url": "https://github.com/highontrading/vibeediting-mcp", "source": "github" },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@vibeediting/mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        { "name": "VIBE_LICENSE_KEY", "description": "Your vibeediting license key (VIBE-XXXX-XXXX-XXXX-XXXX)", "isRequired": true, "isSecret": true },
+        { "name": "PEXELS_API_KEY", "description": "Optional free Pexels API key for stock footage", "isRequired": false, "isSecret": true },
+        { "name": "PIXABAY_API_KEY", "description": "Optional free Pixabay API key for stock footage", "isRequired": false, "isSecret": true }
+      ]
+    }
+  ]
+}

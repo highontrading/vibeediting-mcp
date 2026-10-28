@@ -1,6 +1,17 @@
 # vibeediting MCP: build plan
 
-Date: 2026-10-27. Status: **waiting for go-ahead**. No code has been written yet.
+Date: 2026-10-27. Status: **approved and built** (2026-10-28). The owner asked to go with every recommendation below.
+
+## Decisions taken
+
+1. Node 22+; Mac tutorial uses `brew install ffmpeg-full`. No bundled or downloaded FFmpeg: clear install messages instead.
+2. Captions are written as spoken (Devanagari for Hindi). `set_caption_text` lets the agent rewrite lines in Roman Hinglish on request.
+3. Default speech model `turbo` (large-v3-turbo q5_0, 574 MB); `small` on Intel Macs and computers with less than 8 GB RAM.
+4. Motion graphics: built-in libass templates (no install) plus our own HTML renderer on playwright-core with the installed Chrome/Edge. No Remotion, no HyperFrames.
+5. TypeScript 6.0 instead of 7.0, because typescript-eslint does not support 7 yet.
+6. All server-side waits stay under 50 s, because many MCP clients cancel requests after 60 s.
+
+What changed on the website side is listed in `docs/website-changes.md`.
 
 All versions, prices and licence terms below were checked against live sources on
 2026-10-27 (npm registry, GitHub, official docs). Items marked *unverified* could
