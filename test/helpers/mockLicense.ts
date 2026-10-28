@@ -21,7 +21,7 @@ export interface MockLicense {
 }
 
 /** A tiny stand-in for https://vibeediting.app/api/license/*. */
-export async function startMockLicense(): Promise<MockLicense> {
+export async function startMockLicense(port = 0): Promise<MockLicense> {
   const state: MockLicense = { url: '', calls: [], mode: 'valid', close: async () => undefined };
   const machines = new Set<string>();
   const server = http.createServer((req, res) => {
@@ -74,7 +74,7 @@ export async function startMockLicense(): Promise<MockLicense> {
       }
     });
   });
-  await new Promise<void>((r) => server.listen(0, '127.0.0.1', () => r()));
+  await new Promise<void>((r) => server.listen(port, '127.0.0.1', () => r()));
   state.url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   state.close = () =>
     new Promise<void>((r) => {
