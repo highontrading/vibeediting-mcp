@@ -25,13 +25,13 @@ describe('path safety', () => {
 
   it('resolves relative paths with spaces inside the root', () => {
     const p = ws.resolve('sub folder/my clip.mp4', { mustExist: true });
-    expect(p).toBe(path.join(fs.realpathSync(root), 'sub folder', 'my clip.mp4'));
+    expect(p).toBe(path.join(fs.realpathSync.native(root), 'sub folder', 'my clip.mp4'));
     expect(ws.rel(p)).toBe('sub folder/my clip.mp4');
   });
 
   it('accepts absolute paths inside the root and quoted paths', () => {
     const abs = path.join(root, 'sub folder', 'my clip.mp4');
-    expect(ws.resolve(`"${abs}"`)).toBe(fs.realpathSync(abs));
+    expect(ws.resolve(`"${abs}"`)).toBe(fs.realpathSync.native(abs));
   });
 
   it('rejects paths outside the root', () => {
@@ -80,6 +80,7 @@ describe('unsafe roots', () => {
   it('allows sub folders of temp folders but not the system folders themselves', () => {
     expect(isUnsafeRoot('/private/var/folders/ab/T/my-videos')).toBe(false);
     expect(isUnsafeRoot('/tmp/reels')).toBe(false);
-    expect(isUnsafeRoot('/usr/local/videos')).toBe(true);
+    if (process.platform !== 'win32') expect(isUnsafeRoot('/usr/local/videos')).toBe(true);
+    else expect(isUnsafeRoot('C:\\Windows\\System32')).toBe(true);
   });
 });
