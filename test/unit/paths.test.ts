@@ -75,3 +75,11 @@ describe('path safety', () => {
     expect(isInside('/a/b', '/a/b')).toBe(true);
   });
 });
+
+describe('unsafe roots', () => {
+  it('allows sub folders of temp folders but not the system folders themselves', () => {
+    expect(isUnsafeRoot('/private/var/folders/ab/T/my-videos')).toBe(false);
+    expect(isUnsafeRoot('/tmp/reels')).toBe(false);
+    expect(isUnsafeRoot('/usr/local/videos')).toBe(true);
+  });
+});

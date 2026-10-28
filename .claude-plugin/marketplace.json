@@ -1,0 +1,12 @@
+{
+  "name": "vibeediting",
+  "owner": { "name": "vibeediting", "url": "https://vibeediting.app" },
+  "description": "Edit videos by talking to Claude. Runs on your computer.",
+  "plugins": [
+    {
+      "name": "vibeediting",
+      "source": "./plugin",
+      "description": "Cut silences, add captions, titles and B-roll, and export Reels, Shorts and YouTube videos by talking to Claude. Everything runs on your computer."
+    }
+  ]
+}

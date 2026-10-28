@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "vibeediting": {
+      "command": "npx",
+      "args": ["-y", "@vibeediting/mcp@0.1.0"],
+      "env": {
+        "VIBE_LICENSE_KEY": "${user_config.vibe_license_key}",
+        "PEXELS_API_KEY": "${user_config.pexels_api_key}",
+        "PIXABAY_API_KEY": "${user_config.pixabay_api_key}"
+      }
+    }
+  }
+}

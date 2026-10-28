@@ -47,6 +47,9 @@ export function fontsDir(): string {
 export function toolWaitSeconds(): number {
   const v = Number(process.env.VIBE_TOOL_WAIT_SECONDS);
   return Number.isFinite(v) && v >= 0 && process.env.VIBE_TOOL_WAIT_SECONDS !== undefined
-    ? Math.min(v, 280)
-    : 40;
+    ? Math.min(v, MAX_WAIT_SECONDS)
+    : 30;
 }
+
+/** Many MCP clients cancel a request after 60 seconds, so no tool waits longer than this. */
+export const MAX_WAIT_SECONDS = 50;

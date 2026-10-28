@@ -1,0 +1,38 @@
+{
+  "name": "vibeediting",
+  "displayName": "vibeediting",
+  "version": "0.1.0",
+  "description": "Edit your videos by talking to Claude: cut silences and fillers, add word-by-word captions (Hindi, English, Hinglish), titles, zooms, motion graphics and stock B-roll, then export Reels, Shorts and YouTube videos. Everything runs on your computer; footage is never uploaded.",
+  "author": { "name": "vibeediting", "url": "https://vibeediting.app" },
+  "homepage": "https://vibeediting.app",
+  "repository": "https://github.com/highontrading/vibeediting-mcp",
+  "license": "LicenseRef-vibeediting-EULA",
+  "keywords": ["video", "editing", "captions", "reels", "shorts", "youtube", "hinglish", "ffmpeg"],
+  "documentationUrl": "https://vibeediting.app/docs",
+  "supportUrl": "https://vibeediting.app/support",
+  "privacyPolicyUrl": "https://vibeediting.app/privacy",
+  "termsOfServiceUrl": "https://vibeediting.app/terms",
+  "userConfig": {
+    "vibe_license_key": {
+      "type": "string",
+      "title": "vibeediting license key",
+      "description": "Your key from the purchase email. It looks like VIBE-XXXX-XXXX-XXXX-XXXX.",
+      "required": true,
+      "sensitive": true
+    },
+    "pexels_api_key": {
+      "type": "string",
+      "title": "Pexels API key (optional)",
+      "description": "Free key from https://www.pexels.com/api/ to search stock videos. Leave empty if you don't need stock footage.",
+      "default": "",
+      "sensitive": true
+    },
+    "pixabay_api_key": {
+      "type": "string",
+      "title": "Pixabay API key (optional)",
+      "description": "Free key from https://pixabay.com/api/docs/ to search stock videos. Leave empty if you don't need it.",
+      "default": "",
+      "sensitive": true
+    }
+  }
+}

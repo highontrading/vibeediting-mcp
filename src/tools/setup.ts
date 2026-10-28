@@ -14,7 +14,7 @@ import {
   MODELS,
   type ModelId,
 } from '../transcribe/models.js';
-import { dirs, VERSION, vibeHome } from '../util/config.js';
+import { dirs, MAX_WAIT_SECONDS, VERSION, vibeHome } from '../util/config.js';
 import { ensureDir } from '../util/fsx.js';
 import { type App, runJob, text, tool, waitJob } from './kit.js';
 
@@ -160,10 +160,10 @@ export function registerSetupTools(app: App): void {
     {
       title: 'Get job status',
       description:
-        'Wait for a background job (render, transcription, analysis) and get its result. Waits up to wait_seconds (default 50) before answering. Set cancel=true to stop the job.',
+        'Wait for a background job (render, transcription, analysis) and get its result. Waits up to wait_seconds (default 45, max 50) before answering; call again if it is still running. Set cancel=true to stop the job.',
       input: z.object({
         job_id: z.string().optional().describe('job id; omit to list recent jobs'),
-        wait_seconds: z.number().min(0).max(240).optional(),
+        wait_seconds: z.number().min(0).max(MAX_WAIT_SECONDS).optional(),
         cancel: z.boolean().optional(),
       }),
       annotations: { readOnlyHint: true },
@@ -182,7 +182,7 @@ export function registerSetupTools(app: App): void {
             ? `Cancelling job ${args.job_id}.`
             : `Job ${args.job_id} is not running.`,
         );
-      return waitJob(app, ctx, args.job_id, args.wait_seconds ?? 50);
+      return waitJob(app, ctx, args.job_id, Math.min(MAX_WAIT_SECONDS, args.wait_seconds ?? 45));
     },
   );
 }

@@ -40,18 +40,31 @@ export function isUnsafeRoot(dir: string): boolean {
   const home = norm(os.homedir());
   if (r === home) return true;
   if (path.parse(r).root === r) return true;
-  const bad = [
+  // Exact system folders (never a sub folder like /private/var/folders/... temp dirs on macOS).
+  const exact = [
+    '/var',
+    '/private',
+    '/private/var',
+    '/private/tmp',
+    '/tmp',
+    '/users',
+    '/home',
+    '/volumes',
+    'c:\\users',
+  ];
+  if (exact.includes(r)) return true;
+  const prefixes = [
     'c:\\windows',
     'c:\\program files',
     'c:\\program files (x86)',
     '/system',
     '/usr',
     '/bin',
+    '/sbin',
     '/etc',
-    '/private/var',
-    '/var',
+    '/library',
   ];
-  return bad.some((b) => r === b || r.startsWith(b + path.sep));
+  return prefixes.some((b) => r === b || r.startsWith(b + path.sep));
 }
 
 /**

@@ -48,7 +48,7 @@ describe.skipIf(!fs.existsSync(CLI) || !hasFfmpeg())('MCP server end to end (std
       VIBE_HOME: home,
       VIBE_API_URL: lic.url,
       VIBE_LICENSE_KEY: VALID_KEY,
-      VIBE_TOOL_WAIT_SECONDS: '120',
+      VIBE_TOOL_WAIT_SECONDS: '50',
     });
   });
   afterAll(async () => {
@@ -163,7 +163,7 @@ describe.skipIf(!fs.existsSync(CLI) || !hasFfmpeg())('MCP server end to end (std
       expect(m).not.toBeNull();
       const s: any = await c2.callTool({
         name: 'get_job_status',
-        arguments: { job_id: m![1], wait_seconds: 120 },
+        arguments: { job_id: m![1], wait_seconds: 50 },
       });
       expect(textOf(s)).toContain('Preview ready');
     } finally {
