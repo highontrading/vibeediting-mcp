@@ -14,6 +14,8 @@ Please change these things on the website and in the tutorials.
 
    Since January 2026 the normal Homebrew `ffmpeg` has no caption support (no libass). Captions and titles would fail. vibeediting finds `ffmpeg-full` by itself, even though Homebrew does not put it on the PATH.
 
+   Homebrew 7 first lists the extra parts it will install and asks `Do you want to proceed with the installation? [y/n]`. Tell users to type `y` **in the Terminal** and press Enter, then wait 5 to 15 minutes until the `%` prompt comes back. (A real tester typed the `y` into the chat with their AI instead.)
+
 2. **Node version.** Write "Node.js 22 or newer (LTS)". Node 20 is end of life. If the tutorial only says "install Node LTS", it is already fine.
 
 3. **Windows FFmpeg.** `winget install Gyan.FFmpeg` is correct. Add: "Close and reopen your terminal, and restart your AI app, after installing."
