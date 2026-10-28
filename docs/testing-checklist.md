@@ -9,16 +9,18 @@ npm run build
 VIBE_LICENSE_KEY=VIBE-XXXX-XXXX-XXXX-XXXX npx @modelcontextprotocol/inspector node dist/cli.js
 ```
 
-- [ ] Tools tab lists 43 tools. Prompts tab lists 4 prompts.
+- [ ] Tools tab lists 44 tools. Prompts tab lists 4 prompts.
 - [ ] `check_setup` shows FFmpeg OK, License OK, working folder.
 
 ## 1. Fresh install (as a customer)
 
 On a computer without vibeediting:
 
-- [ ] Install Node LTS from nodejs.org.
-- [ ] Mac: `brew install ffmpeg-full`. Windows: `winget install Gyan.FFmpeg`, then reopen the terminal.
-- [ ] Install Claude Code and run the tutorial command (Mac command on Mac, `cmd /c` command on Windows).
+- [ ] Mac: paste `curl -fsSL https://vibeediting.app/install.sh | sh` in Terminal. Windows: paste `irm https://vibeediting.app/install.ps1 | iex` in PowerShell.
+- [ ] It asks for the key, says which apps it connected, downloads FFmpeg and the model, and ends with "All set!".
+- [ ] Try it once on a computer **without** Node.js: it gets its own copy and still works.
+- [ ] Claude app: double-click `vibeediting.mcpb`, Install, paste the key, pick the folder. Say "Check my vibeediting setup".
+- [ ] Skip the key during install, then say "Activate vibeediting with VIBE-..." in the chat. It activates.
 - [ ] Open the video folder in a terminal, start `claude`, run `/mcp`: vibeediting shows as connected.
 - [ ] Say "Check my vibeediting setup". Everything important says OK.
 - [ ] Say "Check my vibeediting license". It shows "License OK" and "1 of 2 computers".

@@ -54,11 +54,15 @@ export function launchSpec(
   const env = { PATH: [nodeDir, ...basePath()].join(path.delimiter) };
   if (mode === 'npx') {
     const pkg = opts.packageSpec ?? process.env.VIBE_PACKAGE ?? '@vibeediting/mcp';
+    // A registry name runs as "npx -y <pkg>"; a tarball or folder (tests) needs --package.
+    const npxArgs = /^(@[\w.-]+\/)?[\w.-]+(@[\w.^~<>=-]+)?$/.test(pkg)
+      ? ['-y', pkg]
+      : ['-y', '--package', pkg, '--', 'vibeediting-mcp'];
     const npx = npxCli(nodeDir);
-    if (npx) return { command: node, args: [npx, '-y', pkg], env };
+    if (npx) return { command: node, args: [npx, ...npxArgs], env };
     return {
       command: process.platform === 'win32' ? 'npx.cmd' : path.join(nodeDir, 'npx'),
-      args: ['-y', pkg],
+      args: npxArgs,
       env,
     };
   }

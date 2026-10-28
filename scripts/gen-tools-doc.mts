@@ -7,6 +7,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 const EXAMPLES: Record<string, string> = {
   check_setup: 'Check my vibeediting setup.',
   check_license: 'Check my vibeediting license.',
+  activate_license: 'Activate vibeediting with VIBE-XXXX-XXXX-XXXX-XXXX.',
   deactivate_this_computer: 'Deactivate vibeediting on this computer.',
   set_working_folder: 'My videos are in D:\\Videos\\Reels.',
   get_job_status: 'Is the export done yet?',
@@ -71,7 +72,14 @@ const { tools } = await client.listTools();
 const groups: Array<[string, string[]]> = [
   [
     'Setup',
-    ['check_setup', 'check_license', 'deactivate_this_computer', 'set_working_folder', 'get_job_status'],
+    [
+      'check_setup',
+      'check_license',
+      'activate_license',
+      'deactivate_this_computer',
+      'set_working_folder',
+      'get_job_status',
+    ],
   ],
   [
     'Understand the video',

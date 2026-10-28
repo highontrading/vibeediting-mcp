@@ -105,7 +105,7 @@ jobs:
         run: Start-Process -FilePath node -ArgumentList 'node_modules/tsx/dist/cli.mjs','scripts/test-license-server.mts' -RedirectStandardOutput license-server.log -RedirectStandardError license-server.err -WindowStyle Hidden
       - name: Wait for the license server
         shell: bash
-        run: for i in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:8787/ && exit 0; sleep 1; done; exit 1
+        run: for i in $(seq 1 120); do node -e "fetch('http://127.0.0.1:8787/').then(()=>process.exit(0),()=>process.exit(1))" && exit 0; sleep 1; done; exit 1
       - name: Pretend Cursor is installed
         shell: bash
         run: mkdir -p "$HOME/.cursor"
@@ -139,7 +139,7 @@ jobs:
       - name: License server log
         if: always()
         shell: bash
-        run: cat license-server.log || true
+        run: cat license-server.log license-server.err 2>/dev/null || true
 
   # The one-click extension for the Claude app (macOS and Windows).
   extension:

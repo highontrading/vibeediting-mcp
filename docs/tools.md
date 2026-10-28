@@ -1,6 +1,6 @@
 # vibeediting tools
 
-This list is generated from the server itself (43 tools). You never call these by hand: you talk to your AI agent, and it calls them. The example sentences show what you can say.
+This list is generated from the server itself (44 tools). You never call these by hand: you talk to your AI agent, and it calls them. The example sentences show what you can say.
 
 All times are in seconds (`12.5`) or minutes:seconds (`1:05`). Edit tools use the time in the *current edit* (after cuts).
 
@@ -22,6 +22,16 @@ Say: *"Check my vibeediting setup."*
 Check the vibeediting license on this computer (use when the user says "Check my vibeediting license"). Contacts the license server.
 
 Say: *"Check my vibeediting license."*
+
+### `activate_license`
+
+Activate vibeediting with the license key the user gives you (VIBE-XXXX-XXXX-XXXX-XXXX, from their purchase email). Saves it on this computer, so it is only needed once. Use when a tool says no license key was found, or the user wants to change their key.
+
+Say: *"Activate vibeediting with VIBE-XXXX-XXXX-XXXX-XXXX."*
+
+| Input | Type | Required | What it does |
+|---|---|---|---|
+| `key` | string | yes | the license key exactly as the user gave it |
 
 ### `deactivate_this_computer`
 

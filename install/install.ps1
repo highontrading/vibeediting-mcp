@@ -78,7 +78,7 @@ $nodeBin = Split-Path -Parent $node
 $env:Path = "$nodeBin;$env:Path"
 
 # npx.cmd, not npx.ps1: works whatever the PowerShell script policy is.
-$setupArgs = @('-y', $pkg, '--setup')
+$setupArgs = @('-y', '--package', $pkg, '--', 'vibeediting-mcp', '--setup')
 if ($env:VIBE_SETUP_ARGS) { $setupArgs += ($env:VIBE_SETUP_ARGS -split '\s+' | Where-Object { $_ }) }
 $npx = Join-Path $nodeBin 'npx.cmd'
 if (-not (Test-Path $npx)) { $npx = (Get-Command npx.cmd -ErrorAction SilentlyContinue).Source }

@@ -68,6 +68,16 @@ describe('launch command', () => {
     const s = launchSpec({ cliPath: '/home/a/.npm/_npx/123/node_modules/@vibeediting/mcp/dist/cli.js' });
     expect(s.args).toContain('-y');
     expect(s.args.at(-1)).toBe('@vibeediting/mcp');
+    const pinned = launchSpec({ mode: 'npx', packageSpec: '@vibeediting/mcp@0.1.0' });
+    expect(pinned.args.slice(-2)).toEqual(['-y', '@vibeediting/mcp@0.1.0']);
+    const tgz = launchSpec({ mode: 'npx', packageSpec: '/tmp/vibeediting-mcp-0.1.0.tgz' });
+    expect(tgz.args.slice(-5)).toEqual([
+      '-y',
+      '--package',
+      '/tmp/vibeediting-mcp-0.1.0.tgz',
+      '--',
+      'vibeediting-mcp',
+    ]);
   });
 });
 

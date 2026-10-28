@@ -102,9 +102,9 @@ export PATH
 
 # Use the keyboard for questions even though this script arrives through a pipe.
 if [ -t 0 ]; then
-  exec "$NODE_BIN/npx" -y "$PKG" --setup "$@"
+  exec "$NODE_BIN/npx" -y --package "$PKG" -- vibeediting-mcp --setup "$@"
 elif (exec </dev/tty) 2>/dev/null; then
-  exec "$NODE_BIN/npx" -y "$PKG" --setup "$@" </dev/tty
+  exec "$NODE_BIN/npx" -y --package "$PKG" -- vibeediting-mcp --setup "$@" </dev/tty
 else
-  exec "$NODE_BIN/npx" -y "$PKG" --setup --yes "$@"
+  exec "$NODE_BIN/npx" -y --package "$PKG" -- vibeediting-mcp --setup --yes "$@"
 fi

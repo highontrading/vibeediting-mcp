@@ -4,7 +4,7 @@
 
 First version.
 
-- MCP server `vibeediting` (stdio, MCP SDK v2) with 43 tools and 4 workflow prompts.
+- MCP server `vibeediting` (stdio, MCP SDK v2) with 44 tools and 4 workflow prompts.
 - License check with 24-hour cache, 7-day offline grace and friendly messages. Works on 2 computers per key.
 - Local speech-to-text (Whisper) with word timings, for Hindi, English and Hinglish. No Python needed.
 - Edit plan with undo: cut silences, fillers and retakes, trim, split, reorder, aspect ratio with crop/blur/pad.
@@ -16,3 +16,8 @@ First version.
 - Fast previews, final export presets for Reels, Shorts, TikTok and YouTube, YouTube chapters.
 - Shorts finder for long videos.
 - Claude Code plugin with skills that also work in Codex.
+- One-line installers for Mac/Linux (`install.sh`) and Windows (`install.ps1`): they bring a private Node.js if needed, ask for the key and connect Claude Code, Codex, Cursor and the Claude app.
+- One-click Claude app extension (`vibeediting.mcpb`).
+- `npx -y @vibeediting/mcp --setup` guided setup.
+- FFmpeg downloads automatically (checksum verified) when the computer has none with caption support. No Homebrew or winget needed.
+- `activate_license` tool: users can paste their key in the chat.
