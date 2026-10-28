@@ -8,6 +8,7 @@ import { createGunzip } from 'node:zlib';
 import { vibeHome } from '../util/config.js';
 import { UserError } from '../util/errors.js';
 import { ensureDir, exists } from '../util/fsx.js';
+import { log } from '../util/log.js';
 
 /**
  * FFmpeg 6.1.1 static builds with libass (captions), published on GitHub by the
@@ -135,7 +136,7 @@ export function downloadState(): DownloadState {
 /** Download FFmpeg + ffprobe once (about 40-60 MB), verify the checksums, unpack. */
 export function downloadFfmpeg(
   onProgress?: (f: number, msg: string) => void,
-  opts: { baseUrl?: string; assets?: { ffmpeg: Asset; ffprobe: Asset } } = {},
+  opts: { baseUrl?: string; assets?: { ffmpeg: Asset; ffprobe: Asset }; retryDelayMs?: number } = {},
 ): Promise<{ ffmpeg: string; ffprobe: string }> {
   if (current) return current;
   state.running = true;
@@ -157,9 +158,52 @@ export function downloadFfmpeg(
   return current;
 }
 
+/** Download one gzipped file to `tmp`, unpacking it and checking its SHA-256. */
+async function fetchAsset(
+  url: string,
+  sha256: string,
+  tmp: string,
+  onBytes: (n: number) => void,
+): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'vibeediting-mcp' } });
+  } catch (err) {
+    throw new UserError(
+      `I could not download the video tools (FFmpeg). Check your internet connection and try again. (${err instanceof Error ? err.message : String(err)})`,
+    );
+  }
+  if (!res.ok || !res.body)
+    throw new UserError(`Downloading FFmpeg failed (HTTP ${res.status}). Try again in a few minutes.`);
+  const hash = createHash('sha256');
+  const meter = new Transform({
+    transform(chunk: Buffer, _enc, cb) {
+      hash.update(chunk);
+      onBytes(chunk.length);
+      cb(null, chunk);
+    },
+  });
+  try {
+    await pipeline(
+      Readable.fromWeb(res.body as any),
+      meter,
+      createGunzip(),
+      createWriteStream(tmp, { mode: 0o755 }),
+    );
+  } catch (err) {
+    throw new UserError(
+      `The FFmpeg download was interrupted. Try again. (${err instanceof Error ? err.message : String(err)})`,
+    );
+  }
+  if (hash.digest('hex') !== sha256)
+    throw new UserError(
+      'The downloaded FFmpeg did not match its checksum, so I deleted it. Please try again.',
+    );
+}
+
 async function doDownload(
   onProgress: ((f: number, msg: string) => void) | undefined,
-  opts: { baseUrl?: string; assets?: { ffmpeg: Asset; ffprobe: Asset } },
+  opts: { baseUrl?: string; assets?: { ffmpeg: Asset; ffprobe: Asset }; retryDelayMs?: number },
 ) {
   const key = platformKey();
   const assets = opts.assets ?? (key ? ASSETS[key] : undefined);
@@ -194,45 +238,22 @@ async function doDownload(
       continue;
     }
     const tmp = path.join(dir, `.${name}.${process.pid}.part`);
-    let res: Response;
-    try {
-      res = await fetch(base + asset.file, {
-        redirect: 'follow',
-        headers: { 'user-agent': 'vibeediting-mcp' },
-      });
-    } catch (err) {
-      throw new UserError(
-        `I could not download the video tools (FFmpeg). Check your internet connection and try again. (${err instanceof Error ? err.message : String(err)})`,
-      );
-    }
-    if (!res.ok || !res.body)
-      throw new UserError(`Downloading FFmpeg failed (HTTP ${res.status}). Try again in a few minutes.`);
-    const hash = createHash('sha256');
-    const meter = new Transform({
-      transform(chunk: Buffer, _enc, cb) {
-        hash.update(chunk);
-        report(chunk.length);
-        cb(null, chunk);
-      },
-    });
-    try {
-      await pipeline(
-        Readable.fromWeb(res.body as any),
-        meter,
-        createGunzip(),
-        createWriteStream(tmp, { mode: 0o755 }),
-      );
-    } catch (err) {
-      await fs.rm(tmp, { force: true });
-      throw new UserError(
-        `The FFmpeg download was interrupted. Try again. (${err instanceof Error ? err.message : String(err)})`,
-      );
-    }
-    if (hash.digest('hex') !== asset.sha256) {
-      await fs.rm(tmp, { force: true });
-      throw new UserError(
-        'The downloaded FFmpeg did not match its checksum, so I deleted it. Please try again.',
-      );
+    // Up to 3 tries: home connections often drop in the middle of a download.
+    for (let attempt = 1; ; attempt++) {
+      let got = 0;
+      try {
+        await fetchAsset(base + asset.file, asset.sha256, tmp, (n) => {
+          got += n;
+          report(n);
+        });
+        break;
+      } catch (err) {
+        await fs.rm(tmp, { force: true });
+        report(-got);
+        if (attempt >= 3 || (err instanceof UserError && /HTTP 4\d\d/.test(err.message))) throw err;
+        log.info(`FFmpeg download try ${attempt} failed, retrying: ${String(err)}`);
+        await new Promise((r) => setTimeout(r, (opts.retryDelayMs ?? 2000) * attempt));
+      }
     }
     await fs.chmod(tmp, 0o755).catch(() => undefined);
     await fs.rename(tmp, target);

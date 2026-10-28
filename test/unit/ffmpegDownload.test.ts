@@ -15,10 +15,20 @@ describe('FFmpeg auto-download', () => {
   let base: string;
   const ff = gzipSync(Buffer.from('#!/bin/sh\necho fake ffmpeg\n'));
   const fp = gzipSync(Buffer.from('#!/bin/sh\necho fake ffprobe\n'));
+  let flakyHits = 0;
   beforeAll(async () => {
     server = http.createServer((req, res) => {
       if (req.url === '/ff.gz') return res.end(ff);
       if (req.url === '/fp.gz') return res.end(fp);
+      // Drops the connection halfway the first time, works the second time.
+      if (req.url === '/flaky.gz') {
+        if (flakyHits++ === 0) {
+          res.writeHead(200, { 'content-length': String(ff.length) });
+          res.write(ff.subarray(0, 10));
+          return res.destroy();
+        }
+        return res.end(ff);
+      }
       res.statusCode = 404;
       res.end();
     });
@@ -63,11 +73,26 @@ describe('FFmpeg auto-download', () => {
           ffmpeg: { file: 'ff.gz', bytes: ff.length, sha256: '0'.repeat(64) },
           ffprobe: { file: 'fp.gz', bytes: fp.length, sha256: sha(fp) },
         },
+        retryDelayMs: 1,
       }),
     ).rejects.toThrow(/checksum/);
     expect(fs.existsSync(managedPaths().ffmpeg)).toBe(false);
     expect(fs.readdirSync(path.dirname(managedPaths().ffmpeg)).filter((f) => f.endsWith('.part'))).toEqual(
       [],
     );
+  });
+
+  it('tries again when the connection drops', async () => {
+    process.env.VIBE_HOME = tmpDir('ffdl-flaky-');
+    const out = await downloadFfmpeg(undefined, {
+      baseUrl: base,
+      assets: {
+        ffmpeg: { file: 'flaky.gz', bytes: ff.length, sha256: sha(ff) },
+        ffprobe: { file: 'fp.gz', bytes: fp.length, sha256: sha(fp) },
+      },
+      retryDelayMs: 1,
+    });
+    expect(flakyHits).toBe(2);
+    expect(fs.readFileSync(out.ffmpeg, 'utf8')).toContain('fake ffmpeg');
   });
 });

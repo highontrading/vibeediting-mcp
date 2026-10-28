@@ -42,14 +42,19 @@ sha256_of() {
   fi
 }
 
+# Download with up to 4 tries (a cut-off connection is common on slow Wi-Fi).
 fetch() {
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsSL --retry 3 -o "$2" "$1"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -q -O "$2" "$1"
-  else
-    fail "curl or wget is needed"
-  fi
+  for try in 1 2 3 4; do
+    if command -v curl >/dev/null 2>&1; then
+      curl -fsSL --retry 2 -o "$2" "$1" && return 0
+    elif command -v wget >/dev/null 2>&1; then
+      wget -q -O "$2" "$1" && return 0
+    else
+      fail "curl or wget is needed"
+    fi
+    [ "$try" -lt 4 ] && say "Download interrupted, trying again ($try of 3)..." && sleep $((try * 2))
+  done
+  return 1
 }
 
 install_node() {

@@ -49,7 +49,12 @@ function Install-Node {
     $sum = ($line.Trim() -split '\s+')[0]
     $file = ($line.Trim() -split '\s+')[1]
     $zip = Join-Path $tmp $file
-    try { Invoke-WebRequest -UseBasicParsing "$nodeDist/$file" -OutFile $zip } catch { Fail 'Node.js download failed' }
+    $ok = $false
+    for ($try = 1; $try -le 4 -and -not $ok; $try++) {
+      try { Invoke-WebRequest -UseBasicParsing "$nodeDist/$file" -OutFile $zip; $ok = $true }
+      catch { if ($try -lt 4) { Write-Host "Download interrupted, trying again ($try of 3)..."; Start-Sleep ($try * 2) } }
+    }
+    if (-not $ok) { Fail 'Node.js download failed (check your internet connection)' }
     if ((Get-FileHash -Algorithm SHA256 $zip).Hash.ToLower() -ne $sum.ToLower()) { Fail 'Node.js download did not match its checksum' }
     Expand-Archive -Path $zip -DestinationPath (Join-Path $tmp 'x') -Force
     New-Item -ItemType Directory -Path $vibeDir -Force | Out-Null
