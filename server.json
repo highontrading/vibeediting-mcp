@@ -13,9 +13,24 @@
       "version": "0.1.0",
       "transport": { "type": "stdio" },
       "environmentVariables": [
-        { "name": "VIBE_LICENSE_KEY", "description": "Your vibeediting license key (VIBE-XXXX-XXXX-XXXX-XXXX)", "isRequired": true, "isSecret": true },
-        { "name": "PEXELS_API_KEY", "description": "Optional free Pexels API key for stock footage", "isRequired": false, "isSecret": true },
-        { "name": "PIXABAY_API_KEY", "description": "Optional free Pixabay API key for stock footage", "isRequired": false, "isSecret": true }
+        {
+          "name": "VIBE_LICENSE_KEY",
+          "description": "Your vibeediting license key (VIBE-XXXX-XXXX-XXXX-XXXX)",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "PEXELS_API_KEY",
+          "description": "Optional free Pexels API key for stock footage",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "PIXABAY_API_KEY",
+          "description": "Optional free Pixabay API key for stock footage",
+          "isRequired": false,
+          "isSecret": true
+        }
       ]
     }
   ]
